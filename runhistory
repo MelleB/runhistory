@@ -1,0 +1,57 @@
+#!/usr/bin/python
+
+import sys
+import os
+import re
+import signal
+
+def line_contains_words(ln, ws):
+	""" Check whether line $ln$ contains words $ws$. """
+	return any(w in ln for w in ws)
+
+# Handle Ctrl+C
+def signal_handler(signal, frame):
+	print '\nOperation cancelled.'
+	sys.exit(1)
+signal.signal(signal.SIGINT, signal_handler)
+
+# If no arguments are given, show 'help'
+if len(sys.argv) == 1:
+	print 'RunHistory - Find and run previously executed bash-shell commands.'
+	print 'Usage: %s [keyword]\n' % sys.argv[0]
+	sys.exit(1)
+
+# Open the bash history file and find all matching words
+f = open(os.getenv('HOME') + '/.bash_history')
+cmds = [ln for ln in f if line_contains_words(ln, sys.argv[1:])]
+cmds = set(cmds)
+cmds = list(cmds)
+f.close();
+
+# Check for the number of results found, if more than 8 ask permission
+show = True
+if len(cmds) > 8:
+	msg = "Show all " + str(len(cmds)) + " results? [Y/n] "
+	while True:
+		s = raw_input(msg).lower();
+		if s in ['','y','n']: break;
+	show = s != 'n'
+elif len(cmds) == 0:
+	show = False
+	print "No matches found."
+
+if show:
+	i = 0
+	for c in cmds:
+		i += 1
+		print str(i) + ") "+c.rstrip()
+	while True:
+		try: 
+			n = int(raw_input("Select command (or press Ctrl+C): "))
+			if 0 < n < len(cmds): break;
+		except ValueError:
+			pass
+	print "Executing: %s" % cmds[n-1]
+	os.system(cmds[n-1])
+	
+
