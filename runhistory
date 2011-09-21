@@ -48,7 +48,7 @@ if show:
 	while True:
 		try: 
 			n = int(raw_input("Select command (or press Ctrl+C): "))
-			if 0 < n < len(cmds): break;
+			if 0 < n < len(cmds) + 1: break;
 		except ValueError:
 			pass
 	print "Executing: %s" % cmds[n-1]
